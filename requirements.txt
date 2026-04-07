@@ -1,5 +1,5 @@
-bittensor==9.7.0
-bittensor-cli==9.9.0
-substrate-interface==1.7.11
-python-dotenv==1.1.1
-bcrypt
+bittensor==9.12.2
+bittensor-cli==9.16.0
+substrate-interface==1.8.1
+python-dotenv==1.2.1
+bcrypt==5.0.0

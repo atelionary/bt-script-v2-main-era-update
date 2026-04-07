@@ -92,7 +92,7 @@ class StakeService:
                 }
             min_tolerance = 2 * tao_amount / subnet.tao_in.tao
     
-            rate_tolerance = min_tolerance + 0.001
+            rate_tolerance = min_tolerance * 1.1
         
         # Execute staking with retry mechanism
         success = False

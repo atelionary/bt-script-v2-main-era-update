@@ -25,9 +25,9 @@ class RonProxy:
         self.network = network
         self.delegator = delegator
         if not proxy_hotkey:
-            self.proxy_wallet = bt.wallet(name=proxy_wallet)
+            self.proxy_wallet = bt.Wallet(name=proxy_wallet)
         else:
-            self.proxy_wallet = bt.wallet(name=proxy_wallet, hotkey=proxy_hotkey)
+            self.proxy_wallet = bt.Wallet(name=proxy_wallet, hotkey=proxy_hotkey)
         # self.proxy_wallet.unlock()
         self.subtensor = bt.Subtensor(network=network)
         self.substrate = SubstrateInterface(

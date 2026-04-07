@@ -90,7 +90,7 @@ class StakeService:
                     "success": False,
                     "error": f"Subnet with netuid {netuid} does not exist"
                 }
-            min_tolerance = tao_amount / subnet.tao_in.tao
+            min_tolerance = 2 * tao_amount / subnet.tao_in.tao
     
             rate_tolerance = min_tolerance + 0.001
         

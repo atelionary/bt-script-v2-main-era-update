@@ -1,5 +1,10 @@
 # Overview
-
+            |--------------------------------------------------------------------------------|
+            |                                                                                |
+            |                           Attention Wallet Setup                               |
+            |                                                                                |
+            |--------------------------------------------------------------------------------|
+            
 Proxy for Bittensor Staking - Ensuring 100% confidence and security for Subnet alpha token traders
 
 # How to use

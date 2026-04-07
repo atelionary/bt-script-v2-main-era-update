@@ -20,9 +20,9 @@ class Settings(BaseModel):
     
     # WALLET_NAMES: List[str] = os.getenv("WALLET_NAMES", "").split(",")
     # DELEGATORS: List[str] = os.getenv("DELEGATORS", "").split(",")
-    WALLET_NAMES: List[str] = ["shib", "atel"]
-    DELEGATORS: List[str] = ["5Fr9ArEKsuBgGyafH8u6G611KaCisYDhHuEb2LmD46HzkbzX" ,"5CHLb1prLQ4MjA6bYbpPfx1gzvaGpeSfXkk84sMDcNXRQDPd"]
+    WALLET_NAMES: List[str] = ["spa"]
+    DELEGATORS: List[str] = ["5G2Qr3K4Nxyrmo6FaDc9go6g4UC2RR4ghcXsKypdy4JT1rLe"]
     
-    ADMIN_HASH: str = "$2b$12$tlj2uJ0FF9Gxk9x6yCtZkewTtfiBnesTJKIQD8YiDBtb9psjpHwUS"
+    ADMIN_HASH: str = "$2b$12$StVLNwJfMqQWjqSKYT2PCOgVBWIQj37LrN6rOZvLlGDEriuZoYOHC"
 
 settings = Settings()

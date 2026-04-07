@@ -21,7 +21,7 @@ async def boot():
 
     args = parser.parse_args()
 
-    wallet = bt.wallet(args.coldkey, args.hotkey, path=args.wallet_path)
+    wallet = bt.Wallet(args.coldkey, args.hotkey, path=args.wallet_path)
     axon = bt.axon(wallet=wallet, port=args.port, external_ip=args.external_ip)
     subtensor = bt.Subtensor(network=args.subtensor_address)
     try:

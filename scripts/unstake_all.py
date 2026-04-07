@@ -8,7 +8,7 @@ if __name__ == '__main__':
 
     subtensor = bt.subtensor('finney')
 
-    wallet = bt.wallet(name=wallet_name)
+    wallet = bt.Wallet(name=wallet_name)
     wallet.unlock_coldkey()
     
     stake_infos = subtensor.get_stake_for_coldkey(

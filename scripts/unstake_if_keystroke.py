@@ -27,7 +27,7 @@ if __name__ == '__main__':
     tolerance = float(input("Enter the tolerance: "))
 
     subtensor = bt.Subtensor(network=settings.NETWORK)
-    wallet = bt.wallet(name=wallet_name)
+    wallet = bt.Wallet(name=wallet_name)
     wallet.unlock_coldkey()
     delegator = DELEGATORS[WALLET_NAMES.index(wallet_name)]
     

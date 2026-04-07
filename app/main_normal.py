@@ -22,11 +22,11 @@ app = fastapi.FastAPI()
 templates = Jinja2Templates(directory="app/templates")
 
 wallet_names = ["green"]
-wallets: Dict[str, bt.wallet] = {}
+wallets: Dict[str, bt.Wallet] = {}
 
 def unlock_wallets():
     for wallet_name in wallet_names:
-        wallet = bt.wallet(name=wallet_name)
+        wallet = bt.Wallet(name=wallet_name)
         print(f"Unlocking wallet {wallet_name}")
         retries = 3
         for _ in range(retries):

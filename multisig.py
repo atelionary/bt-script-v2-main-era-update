@@ -30,7 +30,7 @@ class MultisigProposal:
         
         self.network = network
         self.multisig_address = multisig_address
-        self.proxy_wallet = bt.wallet(name=proxy_wallet)
+        self.proxy_wallet = bt.Wallet(name=proxy_wallet)
         self.approver_address = approver_address
         self.substrate = SubstrateInterface(
             url=RPC_ENDPOINTS[self.network],
@@ -281,7 +281,7 @@ def get_user_input():
             sys.exit(1)
             
         if proxy_address.lower() == 'self':
-            proxy_address = bt.wallet(name=os.getenv('PROXY_WALLET')).coldkey.ss58_address
+            proxy_address = bt.Wallet(name=os.getenv('PROXY_WALLET')).coldkey.ss58_address
             print(f"Proxy address set to your own address: {proxy_address}")
         
         while True:

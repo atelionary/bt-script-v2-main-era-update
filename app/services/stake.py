@@ -152,11 +152,20 @@ class StakeService:
         # Determine amount to unstake
         if amount is None:
             # Unstake all available balance
-            amount_balance = self.subtensor.get_stake(
-                coldkey_ss58=delegator,
-                hotkey_ss58=dest_hotkey,
-                netuid=netuid
-            )
+            # amount_balance = self.subtensor.get_stake(
+            #     coldkey_ss58=delegator,
+            #     hotkey_ss58=dest_hotkey,
+            #     netuid=netuid
+            # )
+            print(f"delegator: {delegator} dest_hotkey: {dest_hotkey} netuid: {netuid}")
+            
+            amount_balance = self.subtensor.get_stake_for_coldkey_and_hotkey(
+                delegator,
+                dest_hotkey,
+                [netuid]
+            )[netuid].stake
+            print("++++++++++++++++++++++++++++++++++++++++++++++")
+            print(f"amount_balance: {amount_balance.tao} delegate: {delegator} dest_hotkey: {dest_hotkey} netuid: {netuid}")
         else:
             # Convert TAO amount to Balance object
             amount_balance = bt.Balance.from_tao(amount, netuid)

@@ -82,6 +82,8 @@ def unstake(
             "success": False,
             "error": f"Wallet '{wallet_name}' not found"
         }
+    
+    print("==================================================================")
 
     return stake_service.unstake(
         netuid=netuid,

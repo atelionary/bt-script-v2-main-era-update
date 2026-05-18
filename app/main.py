@@ -69,6 +69,7 @@ def stake_list(wallet_name: str):
 def stake_list_v2(wallet_name: str):
     subtensor = stake_service.subtensor
     stake_list = get_stake_list(subtensor, wallet_name)
+    print("==================================================================")
     html_content = f"""
     <!DOCTYPE html>
     <html>

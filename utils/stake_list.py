@@ -13,7 +13,7 @@ def get_amount(tao_in, alpha_in, alpha_unstake_amount):
 
 
 def get_stake_list(subtensor, wallet_ss58):
-    stake_infos = subtensor.get_stake_for_coldkey(
+    stake_infos = subtensor.get_stake_info_for_coldkey(
         coldkey_ss58=wallet_ss58
     )
     subnet_infos = subtensor.all_subnets()
@@ -63,7 +63,7 @@ def get_stake_list(subtensor, wallet_ss58):
 
 if __name__ == "__main__":
     subtensor = bt.Subtensor("finney")
-    wallet_ss58 = "5F5WLLEzDBXQDdTzDYgbQ3d3JKbM15HhPdFuLMmuzcUW5xG2"
+    wallet_ss58 = "5G2Qr3K4Nxyrmo6FaDc9go6g4UC2RR4ghcXsKypdy4JT1rLe"
     stake_list = get_stake_list(subtensor, wallet_ss58)    
     print(stake_list)
     

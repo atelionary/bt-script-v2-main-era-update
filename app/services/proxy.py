@@ -1,8 +1,5 @@
 import bittensor as bt
-from substrateinterface import SubstrateInterface
-from substrateinterface.exceptions import SubstrateRequestException
-from typing import Optional, cast
-from bittensor.utils.balance import Balance, FixedPoint, fixed_to_float
+from bittensor.balance import Balance
 
 
 class Proxy:
@@ -16,16 +13,7 @@ class Proxy:
             delegator: Delegator address
         """
         self.network = network
-        self.subtensor = bt.Subtensor(network=network)
-        
-
-    def init_runtime(self):
-        self.substrate = SubstrateInterface(
-            url=self.network,
-            ss58_format=42,
-            type_registry_preset='substrate-node-template',
-            auto_reconnect=True,
-        )
+        self.subtensor = bt.Subtensor(network)
 
     def add_stake(
         self, 
@@ -46,49 +34,45 @@ class Proxy:
             amount: Amount to stake
             tolerance: Tolerance for stake amount
         """
-        free_balance = self.subtensor.get_balance(
-            address=delegator,
-        )
+        free_balance = self.subtensor.balances.get(delegator)
         print(f"free_balance: {free_balance}")
-        subnet_info = self.subtensor.subnet(netuid)
-        if not subnet_info:
-            return False, f"Subnet with netuid {netuid} does not exist"
-        
-        if subnet_info.is_dynamic:
-            rate = 1 / subnet_info.price.tao or 1
-            _rate_with_tolerance = rate * (
-                1 + tolerance
-            )  # Rate only for display
-            rate_with_tolerance = f"{_rate_with_tolerance:.4f}"
-            price_with_tolerance = subnet_info.price.rao * (
-                1 + tolerance
-            )
-        else:
-            rate_with_tolerance = "1"
-            price_with_tolerance = Balance.from_rao(1)
 
-        print(f"price_with_tolerance: {price_with_tolerance}")
-        self.init_runtime()
-        call = self.substrate.compose_call(
-            call_module='SubtensorModule',
-            call_function='add_stake_limit',
-            call_params={
-                "hotkey": hotkey,
-                "netuid": netuid,
-                "amount_staked": amount.rao,
-                "limit_price": price_with_tolerance,
-                "allow_partial": False,
-            }
+        info = self.subtensor.runtime(
+            bt.runtime_api.SubnetInfoRuntimeApi.get_dynamic_info, [netuid]
         )
-        print(f"call: {call}")
-        is_success, error_message = self._do_proxy_call(proxy_wallet, delegator, call)
-        new_free_balance = self.subtensor.get_balance(
-            address=delegator,
-        )
+        if not info:
+            return False, f"Subnet with netuid {netuid} does not exist"
+
+        # Pass the unlocked coldkey Keypair (a Signer), not the Wallet.
+        # execute() wraps a Wallet in a fresh WalletSigner each call and would
+        # re-prompt for the password even after unlock_coldkey().
+        signer = proxy_wallet.coldkey
+        try:
+            result = self.subtensor.execute(
+                bt.AddStake(
+                    hotkey_ss58=hotkey,
+                    netuid=netuid,
+                    amount_tao=amount.tao,
+                    slippage_protection=True,
+                    rate_tolerance=tolerance,
+                ),
+                signer,
+                proxy_for=delegator,
+                proxy_type="Staking",
+                wait_for_inclusion=True,
+                wait_for_finalization=False,
+            )
+            error_message = result.message
+        except Exception as e:
+            error_message = str(e)
+            result = None
+
+        new_free_balance = self.subtensor.balances.get(delegator)
         if new_free_balance.rao < free_balance.rao:
-            return True, f"Stake added successfully"
-        else:
-            return False, f"Error: {error_message}"
+            return True, "Stake added successfully"
+        if result is not None and result.success:
+            return True, "Stake added successfully"
+        return False, f"Error: {error_message}"
 
 
     def remove_stake(
@@ -110,81 +94,46 @@ class Proxy:
             amount: Amount to unstake (if not using --all)
             all: Whether to unstake all available balance
         """
-        subnet_info = self.subtensor.subnet(netuid)
-        if not subnet_info:
+        info = self.subtensor.runtime(
+            bt.runtime_api.SubnetInfoRuntimeApi.get_dynamic_info, [netuid]
+        )
+        if not info:
             return False, f"Subnet with netuid {netuid} does not exist"
-        
-        if subnet_info.is_dynamic:
-            rate = subnet_info.price.tao or 1
-            rate_with_tolerance = rate * (
-                1 - tolerance
-            )  # Rate only for display
-            price_with_tolerance = subnet_info.price.rao * (
-                1 - tolerance
-            )  # Actual price to pass to extrinsic
-        else:
-            rate_with_tolerance = 1
-            price_with_tolerance = 1
-        print(f"amount: {amount.rao}")
-        self.init_runtime()
-        call = self.substrate.compose_call(
-            call_module='SubtensorModule',
-            call_function='remove_stake_limit',
-            call_params={
-                "hotkey": hotkey,
-                "netuid": netuid,
-                "amount_unstaked": amount.rao - 1,
-                "limit_price": price_with_tolerance,
-                "allow_partial": False,
-            }
-        )
-        free_balance = self.subtensor.get_balance(
-            address=delegator,
-        )
-        
-        is_success, error_message = self._do_proxy_call(proxy_wallet, delegator, call)
-        new_free_balance = self.subtensor.get_balance(
-            address=delegator,
-        )
-        if new_free_balance.rao > free_balance.rao:
-            return True, f"Stake removed successfully"
-        else:
-            return False, f"Error: {error_message}"
 
-    def _do_proxy_call(
-        self,
-        proxy_wallet: bt.Wallet,
-        delegator: str,
-        call,
-    ) -> tuple[bool, str]:
-        proxy_call = self.substrate.compose_call(
-            call_module='Proxy',
-            call_function='proxy',
-            call_params={
-                'real': delegator,
-                'force_proxy_type': 'Staking',
-                'call': call,
-            }
-        )
-        extrinsic = self.substrate.create_signed_extrinsic(
-            call=proxy_call,
-            keypair=proxy_wallet.coldkey,
-            era={"period": 1}
-        )
-        print(f"extrinsic: {extrinsic}")
+        # amount is subnet alpha (or TAO on netuid 0); leave 1 rao dust like before
+        amount_alpha = max(amount.rao - 1, 0) / 1e9
+        print(f"amount: {amount.rao}")
+
+        free_balance = self.subtensor.balances.get(delegator)
+
+        # Pass unlocked coldkey Keypair so execute does not re-prompt.
+        signer = proxy_wallet.coldkey
         try:
-            receipt = self.substrate.submit_extrinsic(
-                extrinsic,
+            result = self.subtensor.execute(
+                bt.RemoveStake(
+                    hotkey_ss58=hotkey,
+                    netuid=netuid,
+                    amount_alpha=amount_alpha,
+                    slippage_protection=True,
+                    rate_tolerance=tolerance,
+                ),
+                signer,
+                proxy_for=delegator,
+                proxy_type="Staking",
                 wait_for_inclusion=True,
                 wait_for_finalization=False,
             )
+            error_message = result.message
         except Exception as e:
             error_message = str(e)
-            return False, error_message
-        
-        is_success = receipt.is_success
-        error_message = receipt.error_message
-        return is_success, str(error_message)
+            result = None
+
+        new_free_balance = self.subtensor.balances.get(delegator)
+        if new_free_balance.rao > free_balance.rao:
+            return True, "Stake removed successfully"
+        if result is not None and result.success:
+            return True, "Stake removed successfully"
+        return False, f"Error: {error_message}"
 
 
 if __name__ == "__main__":
@@ -194,5 +143,11 @@ if __name__ == "__main__":
     netuid = input("Enter netuid: ")
     proxy_wallet.unlock_coldkey()
     proxy = Proxy("finney")
-    is_success, error_message = proxy.add_stake(proxy_wallet, delegator, int(netuid), "5F5WLLEzDBXQDdTzDYgbQ3d3JKbM15HhPdFuLMmuzcUW5xG2", Balance.from_tao(int(amount)))
+    is_success, error_message = proxy.add_stake(
+        proxy_wallet,
+        delegator,
+        int(netuid),
+        "5F5WLLEzDBXQDdTzDYgbQ3d3JKbM15HhPdFuLMmuzcUW5xG2",
+        Balance.from_tao(int(amount)),
+    )
     print(is_success, error_message)

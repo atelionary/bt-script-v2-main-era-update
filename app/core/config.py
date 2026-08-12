@@ -11,6 +11,8 @@ load_dotenv(".env")
 class Settings(BaseModel):
     VERSION: str = "0.1.0"
     NETWORK: str = "wss://entrypoint-finney.opentensor.ai:443"
+    # NETWORK: str = "ws://207.244.240.110:9944"
+
     # WALLET_NAMES: List[str] = []
     # DELEGATORS: List[str] = []
     DEFAULT_RATE_TOLERANCE: float = 0.005
@@ -20,8 +22,8 @@ class Settings(BaseModel):
     
     # WALLET_NAMES: List[str] = os.getenv("WALLET_NAMES", "").split(",")
     # DELEGATORS: List[str] = os.getenv("DELEGATORS", "").split(",")
-    WALLET_NAMES: List[str] = ["spa", "yam"]
-    DELEGATORS: List[str] = ["5G2Qr3K4Nxyrmo6FaDc9go6g4UC2RR4ghcXsKypdy4JT1rLe", "5CSyxKQB7M2YmWdZPBnWWLqBq3ucQXCPuhdQ3aQfjyu37Zr2"]
+    WALLET_NAMES: List[str] = ["yam"]
+    DELEGATORS: List[str] = ["5CSyxKQB7M2YmWdZPBnWWLqBq3ucQXCPuhdQ3aQfjyu37Zr2"]
     
     ADMIN_HASH: str = "$2b$12$StVLNwJfMqQWjqSKYT2PCOgVBWIQj37LrN6rOZvLlGDEriuZoYOHC"
 

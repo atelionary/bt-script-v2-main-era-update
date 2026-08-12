@@ -16,8 +16,8 @@ from app.services.proxy import Proxy
 from utils.logger import logger
 
 
-WALLET_NAMES: List[str] = ["spa"]
-DELEGATORS: List[str] = ["5G2Qr3K4Nxyrmo6FaDc9go6g4UC2RR4ghcXsKypdy4JT1rLe"]
+WALLET_NAMES: List[str] = ["yam", "spa"]
+DELEGATORS: List[str] = ["5CSyxKQB7M2YmWdZPBnWWLqBq3ucQXCPuhdQ3aQfjyu37Zr2", "5G2Qr3K4Nxyrmo6FaDc9go6g4UC2RR4ghcXsKypdy4JT1rLe"]
 
 if __name__ == '__main__':
     netuid = int(input("Enter the netuid: "))
@@ -27,7 +27,7 @@ if __name__ == '__main__':
     dest_hotkey = input("Enter the dest hotkey (default is tao5): ") or tao5_HOTKEY
     amount_to_stake = float(input("Enter the amount_to_stake(default is 1): ") or 1)
     tolerance = float(input("Enter the tolerance(default is 0.01): ") or 0.01)
-
+    # network = 'local'
     proxy = Proxy(network=settings.NETWORK)
     proxy.init_runtime()
     subtensor = bt.Subtensor(network=settings.NETWORK)
@@ -58,9 +58,9 @@ if __name__ == '__main__':
             )
             # print(amount_balance)
 
-            # if amount_balance.tao > 1:
-            #     logger.info(f"Amount balance is more than 1 TAO for netuid: {netuid}. Skipping...")
-            #     continue
+            if amount_balance.tao > 1:
+                logger.info(f"Amount balance is more than 1 TAO for netuid: {netuid}. Skipping...")
+                continue
             
             alpha_price = subnet.alpha_to_tao(1)
             logger.info(f"Current alpha token price: {alpha_price} TAO")
